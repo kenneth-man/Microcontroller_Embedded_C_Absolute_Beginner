@@ -8,8 +8,9 @@
 ![](./imgs/Debugging_2.png)
 
 - ### PC communicates with the board through the `ST-Link` debug circuitry
-	- ### By using the `ST-Link` circuitry, we can write programs to the flash memory of the `MCU`, read memory locations, make processor run...
-- ### `SWO` pin connects the `MCU` processor to the debug circuitry
+	- ### By using the `ST-Link` circuitry, we can write programs to the `Flash memory` of the `MCU`, read memory locations, make processor run...
+	- ### `Flash memory` is non-volatile memory, which means it retains the data even after the power is turned off
+- ### `SWO` pin (trace pin) connects the `MCU` processor to the debug circuitry (STLINK)
 
 ![](./imgs/Debugging_3.png)
 
@@ -34,11 +35,6 @@
 
 <br>
 
-- ### `FPU is not initialized, but the project is compiling for an FPU. Please initialize the FPU before use` warning in STM32CubeIDE when building a project
-	- ### Solution: At Project -> Properties -> C/C++ Build -> Settings -> Tool Settings -> MCU Settings, set Floating-point unit to None, and Floating-point ABI to Software
-
-<br>
-
 # Cross-Compilation
 - ### Compile a program with the intention of running it on a different architecture
 ![](./imgs/Cross_Compilation.png)
@@ -52,78 +48,98 @@
 
 <br>
 
-# Create new project in STM32CubeIDE workspace
-1. ### `File` -> `New` -> `STM32 Project` -> Select your board -> Give a project name -> `Targeted Project Type` -> `Finish`
+# What is a Microcontroller?
+![](./imgs/Microcontroller.png)
 
+![](./imgs/Microcontroller_2.png)
+- ### `Program Memory` / `Code Memory` = Stores program instructions; Non-volatile memory
+	- ### `Non-volatile memory` = Data persists even when power is turned off. E.g. `ROM`, `OTP`, `FLASH`, `FRAM`
 
-<br>
+- ### `Data Memory` = Stores data; Volatile memory
+	- ### `Volatile memory` = Temporary data storage; data doesn't persist when power is turned off. E.g. `SRAM`
 
-# Enable `printf`-like debugging (trace logs) with `ARM Cortex-M3/4` processors
-1. ### in `syscalls.c` file, add the following code after the last `#include` statement
-```
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-//					Implementation of printf like feature using ARM Cortex M3/M4/ ITM functionality
-//					This function will not work for ARM Cortex M0/M0+
-//					If you are using Cortex M0, then you can use semihosting feature of openOCD
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
+- ### `CPU` = "Processor" that reads from `Program memory` using `bus` interface and executes program instructions
 
+- ### `CPU` instruction execution speed = Depends on the `Clock supply` of the `CPU`
 
-//Debug Exception and Monitor Control Register base address
-#define DEMCR        			*((volatile uint32_t*) 0xE000EDFCU )
+- ### `Address bus` and `Data bus` = A `CPU` must first provide the memory address of an instruction via the `Address bus`, then read the instruction via the `Data bus`, then the `CPU` has a `Decorder` to decode the instruction
 
-/* ITM register addresses */
-#define ITM_STIMULUS_PORT0   	*((volatile uint32_t*) 0xE0000000 )
-#define ITM_TRACE_EN          	*((volatile uint32_t*) 0xE0000E00 )
+![](./imgs/Microcontroller_3.png)
 
-void ITM_SendChar(uint8_t ch)
-{
+![](./imgs/Microcontroller_4.png)
 
-	//Enable TRCENA
-	DEMCR |= ( 1 << 24);
-
-	//enable stimulus port 0
-	ITM_TRACE_EN |= ( 1 << 0);
-
-	// read FIFO status in bit [0]:
-	while(!(ITM_STIMULUS_PORT0 & 1));
-
-	//Write to ITM stimulus port0
-	ITM_STIMULUS_PORT0 = ch;
-}
-```
-2. ### Also in `syscalls.c` file, update the `__write()` function to
-```
-__attribute__((weak)) int _write(int file, char *ptr, int len)
-{
-  (void)file;
-  int DataIdx;
-
-  for (DataIdx = 0; DataIdx < len; DataIdx++)
-  {
-    //__io_putchar(*ptr++);
-	ITM_SendChar(*ptr++);
-  }
-  return len;
-}
-```
+![](./imgs/Code_Memory.png)
 
 <br>
 
-# Running a Program in Debug mode in STM32CubeIDE
-1. ### Connect the board to the PC
-2. ### Right click Build the project (Compile)
-3. ### Right click the project and `Debug as` -> `Debug Configurations`
-4. ### `STM32 C/C++ Application` -> Double click it to create a new configuration for the current project you've tried to debug as
-	- ### Under `Debugger` tab, make sure `ST-LINK (ST-LINK GDB Server)` is selected as the `Debug Probe`
-	- ### Under `GDB Server Command Line Options`
-		- ### Make sure `SWD` is selected as the interface
-		- ### Make sure `SVW` is enabled
-	- ### Click `Apply` and close the window
-5. ### Right click the project and `Debug as` -> `STM32 C/C++ Application`
-6. ### Now in debug perspective, Program is loaded into the target, and the processor's execution is halted at the first instruction of `main()`
-7. ### To see trace logs, click `Window` -> `Show View` -> `SVW` -> `STM ITM Data Console`
-8. ### In the `STM ITM Data Console`, click the icon to `Configure trace` and select a port to enable; if not sure, then select 0 (`printf` works over port 0)
-9. ### In the `STM ITM Data Console`, click the icon to `Start trace`; `STM ITM Data Console` is now ready to accept data on the `SWO` pin
-10. ### Click `Resume` to continue with processor execution of the program (May need to click `Reset the chip and restart debug session`, then click `Resume`)
+# Viewing Program/Code Memory
+(reference from your microcontroller Reference Manual - E.g. under `Flash module organization STM32F40x and STM32F41x`)
+
+- ### Flash - User can write to
+	- ### Base address shown is `0x0800 0000`
+	- ### Final address shown is `0x080F FFFF`
+	- ### Paste address in STM32CubeIDE into the `Memory Browser` to view the contents of the memory address
+![](./imgs/Memory.png)
+![](./imgs/Memory_5.png)
+
+- ### ROM / System Memory - User cannot write to this memory
+![](./imgs/Memory_2.png)
 
 <br>
+
+# Viewing Data Memory
+(reference from your microcontroller Reference Manual - E.g. under `Embedded SRAM`)
+
+- ### Base address shown is `0x2000 0000`
+- ### From the base address onwards, Data memory starts
+- ### Paste address in STM32CubeIDE into the `Memory Browser` to view the contents of the memory address
+
+![](./imgs/Memory_3.png)
+![](./imgs/Memory_4.png)
+
+<br>
+
+# Analyzing `.elf` file using `GNU tools`
+- ### `objdump`
+	- ### Add `GNU tools` as a `Path` environment variable
+		- ### E.g. `C:\ST\STM32CubeIDE_1.14.1\STM32CubeIDE\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.11.3.rel1.win32_1.1.100.202309141235\tools\bin`
+	- ### Run Command in the project directory where the `.elf` file is
+		- ### E.g. `arm-none-eabi-objdump.exe -h [PROJECT-NAME].elf`
+	
+![](./imgs/Elf.png)
+
+![](./imgs/Elf_2.png)
+- ### `.text`, `.rodata`, `.data` are sections in the `./elf`
+
+![](./imgs/Elf_3.png)
+- ### `LMA` = Load Memory Address
+	- ### Source in `Flash`
+	- ### "Where the section is currently loaded"
+- ### `VMA` = Virtual Memory Address
+	- ### Destination in `SRAM`
+	- ### "Where the section should finally be copied to"
+
+![](./imgs/Elf_4.png)
+- ### Startup files generated by STM32CubeIDE, copies data from `Flash` memory (at `LMA`) to `SRAM` memory (at `VMA`)
+	- ### Copying `.data` section data from `Flash` memory to SRAM memory is necessary because:
+		- ### Performance Optimization
+			- ### Performing a read/write operation with `Flash` memory is slower than with `SRAM`; `SRAM` offers faster access times.
+		- ### Modifyability
+			- ### `SRAM` is volatile, meaning its contents are lost when power is turned off. On the other hand, `Flash` memory is non-volatile, retaining its contents even after power is turned off.
+
+- ### `Reset_Handler` is an assembly routine, that is the 1st routine that get's called when the `MCU`/processor is powered on or reset
+
+![](./imgs/Elf_5.png)
+
+<br>
+
+# Disassembling
+- ### View assembly instructions from the machine code generated
+	- ### In STM322CubeIDE, run project in debug mode and go to `Window` -> `Show View` -> `Disassembly`
+	- ### Or run command `arm-none-eabi-objdump.exe -d [PROJECT-NAME].elf`
+- ### Helpful if you want to carry out instruction level debugging (Instructions that the Processor executes)
+
+- ### E.g.
+![](./imgs/Disassemble.png)
+
+![](./imgs/Disassemble_2.png)

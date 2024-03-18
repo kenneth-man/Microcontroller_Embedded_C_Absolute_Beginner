@@ -133,7 +133,7 @@ printf("%p", &a1);
 ```
 Hexidecimal number: 1A3
 
-3 × 160^0 + 10 × 160^1 + 1 × 160^2
+3 × 16^0 + 10 × 16^1 + 1 × 16^2
 
 Decimal number: 419
 ```
@@ -148,3 +148,8 @@ Decimal number: 450
 Hexidecimal number: 1C2
 
 ```
+
+# Compilation
+![](./imgs/Compilation.png)
+
+![](./imgs/Compilation_2.png)
