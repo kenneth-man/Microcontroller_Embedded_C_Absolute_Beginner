@@ -149,7 +149,75 @@ Hexidecimal number: 1C2
 
 ```
 
+<br>
+
 # Compilation
 ![](./imgs/Compilation.png)
 
 ![](./imgs/Compilation_2.png)
+
+<br>
+
+# Floating point numbers (Real numbers)
+- ### `Float` (32 bit, `Single precision`)
+	- ### Precision: up to 6dp
+	- ### Range: 1.2E-38 to 3.4E+38
+- ### `Double` (64 bit, `Double precision`) - Default
+	- ### Precision: up to 15dp
+	- ### Range: 2.3E-308 to 1.7E+308
+![](./imgs/Floats.png)
+
+- ### IEEE-754 Standard
+![](./imgs/Floats_2.png)
+
+- ### Storing large floats in binary would consume too much memory, instead approximate the number and only store the required information...
+	- ### `Sign`
+	- ### `Exponent`
+	- ### `Mantissa` (Significand)
+
+![](./imgs/Floats_3.png)
+
+- ### Which formats to store a float?
+	- ### `Single Precision` (32 bit)
+	- ### `Double Precision` (64 bit) - More accurate approximation
+![](./imgs/Floats_4.png)
+
+![](./imgs/Floats_5.png)
+
+![](./imgs/Floats_6.png)
+
+- ### `%lf`, `%f`, `%e`, `%le` format specifiers
+	- ### E.g. `%0.2f` is 2dp for floats
+	- ### E.g. `%0.13lf` is 13dp for doubles
+![](./imgs/Floats_7.png)
+
+![](./imgs/Floats_8.png)
+
+<br>
+
+# `scanf` - Read input
+![](./imgs/scanf.png)
+
+<br>
+
+# `getChar` - Read single `char` input
+![](./imgs/getChar.png)
+
+<br>
+
+# `printf` - Print output
+- ### When your program returns, the contents of the `output buffer` are flushed to the display/console
+![](./imgs/printf.png)
+
+<br>
+
+# keyboard input
+- ### When you type via the keyboard, the data goes to an `input buffer`
+![](./imgs/keyboard.png)
+
+- ### E.g. input `10` then pressing the `Enter` key which results in `10` and `\n` in the input buffer
+- ### The `scanf` only reads one `float`, `\n` remains.
+- ### If there's another `scanf`, is disregards the `\n` because it's not a `float`, so waits until a `float` is entered, `\n` remains
+![](./imgs/keyboard_2.png)
+
+![](./imgs/keyboard_3.png)
